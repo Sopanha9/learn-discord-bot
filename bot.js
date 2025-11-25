@@ -7,6 +7,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
     ]
 })
 
@@ -55,6 +56,52 @@ client.on('messageCreate', async (message) => {
 
 
     }
+
+    if (command === "userinfo" || command === "ui") {
+        // get target of mentioned
+        const target = message.mentions.users.first() || message.author
+        const member = message.guild.members.cache.get(target.id);
+
+        if(!member) return message.reply("I couldn't find the member");
+
+        // get timestamp format
+        const created = `<t:${Math.floor(target.createdTimestamp / 1000)}:F>`
+        // const joined = member.joinedTimestamp ? `<t:${Math.floor(member.createdTimestamp / 1000)}:F>` : "Unknown";
+        const joined = member.joinedTimestamp 
+  ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:F>` 
+  : "Unknown";
+        // get color || default color
+        // const roleColor = member.displayHexColor === "#000000" ? "#99aab5" : member.displayHexColor;
+        // const roleColor = member.displayHexColor === "#000000" ? 0x99aab5 : parseInt(member.displayHexColor.replace("#", ""), 16);
+        const roleColor = member.displayHexColor === "#000000" 
+  ? 0x99aab5 
+  : parseInt(member.displayHexColor.slice(1), 16);
+
+        // skip role? for now
+
+        await message.reply({
+            embeds: [{
+                color: roleColor,
+                author: {
+                    name: `${target.tag}`,
+                    icon_url: target.displayAvatarURL({dynamic: true})
+                },
+                thumbnail: { url: target.displayAvatarURL({size: 4096, dynamic : true})},
+                fields: [
+                    {name : "User ID:", value: target.id, inline:false},
+                    {name : "Account Created:", value: created, inline: false},
+                    {name : "Server Joined:", value: joined, inline: false},
+                    {name : "Highest Role:", value: member.roles.highest.name, inline: false},
+                    {name: "Status:", value: member.presence?.status || "Offline", inline: false},
+                    {name: "Activity:", value: member.presence?.activities[0]?.name || "None", inline: false }
+                ],
+                footer: {text: `Requested by ${message.author.tag}`},
+                timestamp: new Date()
+            }]
+        })
+
+    }
+    
 })
 
 client.login(token);
