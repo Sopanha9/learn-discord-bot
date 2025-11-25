@@ -35,6 +35,26 @@ client.on('messageCreate', async (message) => {
         await message.reply(txt);
 
     }
+
+    if( command === "avatar") {
+        // get target user
+        const target = message.mentions.users.first() || message.author;
+
+        await message.reply({
+            embeds: [{
+                color: 0x0099ff,
+                author: {
+                    name: target.username,
+                    icon_url: target.displayAvatarURL({size:256})
+                },
+                title: "Avatar",
+                image: {url: target.displayAvatarURL({size:4096, dynamic: true})},
+                footer: {text: `Requested by ${message.author.username}`}
+            }]
+        });
+
+
+    }
 })
 
 client.login(token);
