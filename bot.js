@@ -13,9 +13,9 @@ const client = new Client({
 
 // When the client is ready, run this code (only once)
 client.once('ready',() => {
-    console.log(`Bot is alive as -> ${client.user.tag}`)
+    console.log(`Bot is alive as => ${client.user.tag}`)
 })
-
+// using !
 client.on('messageCreate', async (message) => { 
     if(message.author.bot) return;
 
@@ -103,5 +103,61 @@ client.on('messageCreate', async (message) => {
     }
     
 })
+
+// Slash command handling
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const { commandName } = interaction;
+
+  if (commandName === 'ping') {
+    const latency = Date.now() - interaction.createdTimestamp;
+    const apiLatency = Math.round(client.ws.ping);
+    await interaction.reply(`Pong! Latency is ${latency}ms. API Latency is ${apiLatency}ms.`);
+  }
+
+  if (commandName === 'avatar') {
+    const user = interaction.options.getUser('user') || interaction.user;
+    await interaction.reply({
+      embeds: [{
+        color: 0x0099ff,
+        title: `${user.username}'s Avatar`,
+        image: { url: user.displayAvatarURL({ size: 4096, dynamic: true }) },
+        footer: { text: `Requested by ${interaction.user.username}` }
+      }]
+    });
+  }
+
+  if (commandName === 'userinfo') {
+    const user = interaction.options.getUser('user') || interaction.user;
+    const member = interaction.options.getMember('user') || interaction.member;
+
+    const created = `<t:${Math.floor(user.createdTimestamp / 1000)}:F>`;
+    const joined = member.joinedTimestamp
+      ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:F>`
+      : "Unknown";
+
+    const roleColor = member.displayHexColor === "#000000"
+      ? 0x99aab5
+      : parseInt(member.displayHexColor.slice(1), 16);
+
+    await interaction.reply({
+      embeds: [{
+        color: roleColor,
+        author: { name: user.tag, icon_url: user.displayAvatarURL({ dynamic: true }) },
+        thumbnail: { url: user.displayAvatarURL({ size: 4096, dynamic: true }) },
+        fields: [
+          { name: "User ID", value: user.id, inline: false },
+          { name: "Account Created", value: created, inline: true },
+          { name: "Server Joined", value: joined, inline: true },
+          { name: "Highest Role", value: member.roles.highest.toString(), inline: true },
+        ],
+        footer: { text: `Requested by ${interaction.user.tag}` },
+        timestamp: new Date()
+      }]
+    });
+  }
+});
+
 
 client.login(token);
