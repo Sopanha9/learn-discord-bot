@@ -35,7 +35,7 @@ function loadCommands(dir) {
           client.commands.set(command.data.name, command);
           console.log(`Loaded command: ${command.data.name}`);
         } else {
-          console.log(`[WARNING] ${fullPath} is missing "data" or "execute"`);
+          console.log(`[WARNING] ${fullPath} is missing "data" or "executed"`);
         }
       } catch (error) {
         console.error(`Failed to load ${fullPath}:`, error);
